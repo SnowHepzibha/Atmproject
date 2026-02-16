@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Accounts</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 60%;
+            margin: 20px auto;
+        }
+
+        th,
+        td {
+            border: 1px solid #333;
+            padding: 8px 12px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #333;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        .up {
+            background-color: green;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            padding: 5px 10px;
+        }
+
+        .del {
+            background-color: red;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            padding: 5px 10px;
+        }
+
+        a {
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2 style="text-align:center;">Account List</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Account number</th>
+                <th>Name</th>
+                <th>Balance</th>
+                <th colspan="2">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for account in all_detail %}
+            <tr>
+                <td>{{ account.id }}</td>
+                <td>{{ account.acc_no }}</td>
+                <td>{{ account.name }}</td>
+                <td>{{ account.balance }}</td>
+                <td><button class="up"><a href="{% url 'updatepage' account.id %}">Edit</a></button></td>
+                <td><button class="del"><a href="{% url 'deletepage' account.id %}">Delete</a></button></td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3">No accounts found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</body>
+
+</html>

@@ -1,0 +1,11 @@
+<form method="POST" action="{% url 'balance' %}">
+    {% csrf_token %}
+    account number:<input type="number" name="acc_no">
+
+    <button type="submit" value="acc_no">submit</button>
+
+    {% if balance %}
+    <h3>balance:{{balance}}</h3>
+    {% endif %}
+
+</form>

@@ -1,0 +1,6 @@
+<form method="POST" action="{% url 'deposit' %}">
+    {% csrf_token %}
+    Account_number:<input type="number" name="acc_no">
+    Amount:<input type="number" name="amount">
+    <button type="submit" value="deposit">deposit</button>
+</form>

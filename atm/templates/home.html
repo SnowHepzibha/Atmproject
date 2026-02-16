@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>ATM Website</title>
+
+    <style>
+        /* Navbar main */
+        .navbar {
+            background-color: #333;
+            padding: 10px;
+        }
+
+        /* Menu container */
+        .menu {
+            display: inline-block;
+            position: relative;
+            margin-left: px;
+        }
+
+        /* Main menu button */
+        .menu button {
+            background-color: #333;
+            color: white;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        /* Dropdown content */
+        .dropdown {
+            display: none;
+            position: absolute;
+            background-color: #f1f1f1;
+            min-width: 150px;
+        }
+
+        .dropdown a {
+            display: block;
+            padding: 8px;
+            text-decoration: none;
+            color: black;
+        }
+
+        .dropdown a:hover {
+            background-color: #ddd;
+        }
+
+        /* Show dropdown on hover */
+        .menu:hover .dropdown {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <div class="navbar">
+
+        <!-- CLIENT MENU -->
+        <div class="menu">
+            <button>Client</button>
+            <div class="dropdown">
+                <a href="{% url 'deposit' %}">Deposit</a>
+                <a href="{% url 'withdraw' %}">Withdraw</a>
+                <a href="{% url 'balance' %}">Check Balance</a>
+            </div>
+        </div>
+
+        <!-- ADMIN MENU -->
+        <div class="menu">
+            <a href="{% url 'admin_login' %}">
+                <button>Admin</button>
+            </a>
+
+        </div>
+
+    </div>
+
+    <h2>Welcome to ATM Website</h2>
+
+</body>
+
+</html>
