@@ -1,5 +1,191 @@
-<form action="" method="POST">
-    {% csrf_token %}
-    {{form.as_p}}
-    <input type="submit" value="add account">
-</form>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATM System | Add Account</title>
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: linear-gradient(135deg, #effaff, #fff1f7);
+            color: #173b55;
+        }
+
+        .navbar {
+            background: linear-gradient(110deg, #073b4c, #07566b);
+            color: white;
+            padding: 20px 6%;
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .container {
+            max-width: 650px;
+            width: 92%;
+            margin: 45px auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 35px;
+            box-shadow: 0 12px 35px rgba(7, 59, 76, 0.09);
+            border: 1px solid #e5edf5;
+        }
+
+        .icon {
+            width: 58px;
+            height: 58px;
+            border-radius: 16px;
+            background: #ffe4ee;
+            display: grid;
+            place-items: center;
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            margin: 0 0 10px;
+            color: #073b4c;
+            font-size: 27px;
+        }
+
+        .subtitle {
+            color: #71869b;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        form p {
+            margin: 0 0 18px;
+        }
+
+        form label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        form input,
+        form select,
+        form textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #d9e5ef;
+            border-radius: 9px;
+            background: #fbfdff;
+            font-size: 14px;
+            outline: none;
+        }
+
+        form input:focus,
+        form select:focus,
+        form textarea:focus {
+            border-color: #ff2e78;
+            box-shadow: 0 0 0 3px rgba(255,46,120,0.09);
+        }
+
+        form .helptext {
+            display: block;
+            color: #71869b;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        form ul.errorlist {
+            color: #c62828;
+            font-size: 13px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 25px;
+        }
+
+        button,
+        .back-btn {
+            border: none;
+            border-radius: 9px;
+            padding: 13px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        button {
+            background: linear-gradient(110deg, #ff2e78, #ff5793);
+            color: white;
+            flex: 1;
+        }
+
+        .back-btn {
+            background: #edf5fa;
+            color: #173b55;
+        }
+
+        button:hover,
+        .back-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        footer {
+            text-align: center;
+            color: #71869b;
+            font-size: 12px;
+            padding: 25px;
+        }
+
+        @media (max-width: 500px) {
+            .card { padding: 24px 19px; }
+            h1 { font-size: 23px; }
+            .buttons { flex-direction: column; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="navbar">▣ ATM System</header>
+
+    <main class="container">
+        <section class="card">
+
+            <div class="icon">＋</div>
+
+            <h1>Add New Account</h1>
+
+            <p class="subtitle">
+                Enter the account details below to create an account.
+            </p>
+
+            <form method="POST">
+                {% csrf_token %}
+
+                {{ form.as_p }}
+
+                <div class="buttons">
+                    <button type="submit">Create Account →</button>
+                    <a href="{% url 'show_account' %}" class="back-btn">
+                        View Accounts
+                    </a>
+                </div>
+            </form>
+
+        </section>
+    </main>
+
+    <footer>© 2026 ATM System. All rights reserved.</footer>
+
+</body>
+</html>

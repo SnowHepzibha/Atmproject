@@ -1,0 +1,550 @@
+{% load tz %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ATM Banking | Mini Statement</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: linear-gradient(135deg, #eef5f9, #dceaf2);
+            min-height: 100vh;
+            color: #263b45;
+        }
+
+        /* HEADER */
+
+        header {
+            background: #1c2e33;
+            color: white;
+            padding: 22px 8%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .logo {
+            font-size: 23px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .tagline {
+            font-size: 13px;
+            color: #c7d8dc;
+            margin-top: 5px;
+        }
+
+        .secure {
+            font-size: 13px;
+            color: #d5e5e8;
+        }
+
+        /* MAIN CONTAINER */
+
+        .container {
+            width: 90%;
+            max-width: 1100px;
+            margin: 40px auto;
+        }
+
+        .page-heading {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .page-heading h1 {
+            font-size: 30px;
+            color: #1c2e33;
+            margin-bottom: 10px;
+        }
+
+        .page-heading p {
+            color: #687d85;
+            font-size: 15px;
+        }
+
+        /* CARD */
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(28, 46, 51, 0.09);
+            margin-bottom: 25px;
+        }
+
+        .card h2 {
+            color: #1c2e33;
+            font-size: 21px;
+            margin-bottom: 10px;
+        }
+
+        .card-description {
+            color: #75858b;
+            font-size: 14px;
+            margin-bottom: 22px;
+        }
+
+        /* SEARCH FORM */
+
+        .search-form {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .search-form input {
+            flex: 1;
+            min-width: 220px;
+            padding: 14px 16px;
+            border: 1px solid #cbd9df;
+            border-radius: 8px;
+            outline: none;
+            font-size: 15px;
+        }
+
+        .search-form input:focus {
+            border-color: #1c7585;
+            box-shadow: 0 0 5px rgba(28, 117, 133, 0.2);
+        }
+
+        .search-form button {
+            padding: 14px 25px;
+            background: #1c7585;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .search-form button:hover {
+            background: #145563;
+            transform: translateY(-2px);
+        }
+
+        /* ERROR MESSAGE */
+
+        .error-message {
+            background: #fff0f0;
+            color: #c62828;
+            border-left: 4px solid #e53935;
+            padding: 13px 16px;
+            border-radius: 6px;
+            margin-top: 18px;
+            font-size: 14px;
+        }
+
+        /* ACCOUNT SUMMARY */
+
+        .account-summary {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .summary-box {
+            background: white;
+            padding: 25px;
+            border-radius: 13px;
+            box-shadow: 0 5px 20px rgba(28, 46, 51, 0.07);
+            border-left: 5px solid #1c7585;
+        }
+
+        .summary-box p {
+            color: #788a90;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        .summary-box h3 {
+            color: #1c2e33;
+            font-size: 23px;
+            word-break: break-word;
+        }
+
+        /* TRANSACTION SECTION */
+
+        .transaction-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 22px;
+        }
+
+        .transaction-heading h2 {
+            font-size: 21px;
+            color: #1c2e33;
+        }
+
+        .count-badge {
+            background: #e4f3f5;
+            color: #176777;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        /* TABLE */
+
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 650px;
+        }
+
+        thead {
+            background: #1c2e33;
+            color: white;
+        }
+
+        th {
+            padding: 16px 14px;
+            text-align: left;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 16px 14px;
+            border-bottom: 1px solid #e8eef0;
+            font-size: 14px;
+            color: #40545b;
+        }
+
+        tbody tr:hover {
+            background: #f4f9fa;
+        }
+
+        .deposit {
+            color: #16834a;
+            font-weight: 700;
+        }
+
+        .withdraw {
+            color: #d43d3d;
+            font-weight: 700;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 30px;
+            color: #7a8a90;
+        }
+
+        /* BACK BUTTON */
+
+        .back-section {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .back-button {
+            display: inline-block;
+            text-decoration: none;
+            background: #1c2e33;
+            color: white;
+            padding: 13px 28px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .back-button:hover {
+            background: #1c7585;
+            transform: translateY(-2px);
+        }
+
+        /* FOOTER */
+
+        footer {
+            background: #1c2e33;
+            color: #c8d6d9;
+            text-align: center;
+            padding: 22px 10px;
+            font-size: 13px;
+            margin-top: 45px;
+        }
+
+        .footer-security {
+            margin-bottom: 8px;
+        }
+
+        /* RESPONSIVE */
+
+        @media (max-width: 650px) {
+
+            header {
+                padding: 18px 5%;
+            }
+
+            .container {
+                width: 94%;
+                margin: 25px auto;
+            }
+
+            .page-heading h1 {
+                font-size: 24px;
+            }
+
+            .card {
+                padding: 20px 16px;
+            }
+
+            .account-summary {
+                grid-template-columns: 1fr;
+            }
+
+            .summary-box h3 {
+                font-size: 20px;
+            }
+
+            .search-form {
+                flex-direction: column;
+            }
+
+            .search-form button {
+                width: 100%;
+            }
+
+            .transaction-heading h2 {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- HEADER -->
+
+    <header>
+        <div>
+            <div class="logo">🏦 ATM BANKING</div>
+            <div class="tagline">Secure • Simple • Convenient</div>
+        </div>
+
+        <div class="secure">🔒 Secure Banking</div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+
+    <div class="container">
+
+        <div class="page-heading">
+            <h1>🔒 Mini Statement</h1>
+            <p>View your recent account transactions securely.</p>
+        </div>
+
+        <!-- ACCOUNT SEARCH -->
+
+        <div class="card">
+
+            <h2>📄 View Account Statement</h2>
+
+            <p class="card-description">
+                Enter your account number to view your transaction history.
+            </p>
+
+            <form method="POST" action="{% url 'statement' %}" class="search-form">
+
+                {% csrf_token %}
+
+                <input type="text" name="acc_no" placeholder="Enter Account Number" value="{{ acc_no }}" required>
+
+                <button type="submit">
+                    View Statement →
+                </button>
+
+            </form>
+
+            {% if error %}
+            <div class="error-message">
+                ⚠️ {{ error }}
+            </div>
+            {% endif %}
+
+        </div>
+
+        {% if account %}
+
+        <!-- ACCOUNT SUMMARY -->
+
+        <div class="account-summary">
+
+            <div class="summary-box">
+                <p>Account Number</p>
+                <h3>{{ account.acc_no }}</h3>
+            </div>
+
+            <div class="summary-box">
+                <p>Available Balance</p>
+                <h3>₹ {{ account.balance|floatformat:2 }}</h3>
+            </div>
+
+        </div>
+
+        <!-- TRANSACTION HISTORY -->
+
+        <div class="card">
+
+            <div class="transaction-heading">
+
+                <div>
+                    <h2>📋 Transaction History</h2>
+
+                    <p class="card-description" style="margin: 8px 0 0;">
+                        Your latest 10 transactions for this account
+                    </p>
+                </div>
+
+                <div class="count-badge">
+                    {{ transactions|length }} Transactions
+                </div>
+
+            </div>
+
+            <div class="table-container">
+
+                <table>
+
+                    <thead>
+                        <tr>
+                            <th>S.No.</th>
+                            <th>Date &amp; Time (IST)</th>
+                            <th>Transaction Type</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for transaction in transactions %}
+
+                        <tr>
+
+                            <td>
+                                {{ forloop.counter }}
+                            </td>
+
+                            <!-- DATE AND TIME -->
+
+                            <td>
+                                {{ transaction.date|localtime|date:"d M Y" }}
+                                <br>
+                                {{ transaction.date|localtime|date:"h:i A" }}
+                            </td>
+
+                            <!-- TRANSACTION TYPE -->
+
+                            <td>
+
+                                {% if transaction.type == "Deposit" %}
+
+                                <span class="deposit">
+                                    ↑ Deposit
+                                </span>
+
+                                {% else %}
+
+                                <span class="withdraw">
+                                    ↓ Withdrawal
+                                </span>
+
+                                {% endif %}
+
+                            </td>
+
+                            <!-- TRANSACTION AMOUNT -->
+
+                            <td>
+
+                                {% if transaction.type == "Deposit" %}
+
+                                <span class="deposit">
+                                    + ₹ {{ transaction.amount|floatformat:2 }}
+                                </span>
+
+                                {% else %}
+
+                                <span class="withdraw">
+                                    - ₹ {{ transaction.amount|floatformat:2 }}
+                                </span>
+
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+                        {% empty %}
+
+                        <tr>
+                            <td colspan="4" class="empty-message">
+                                No transactions found for this account.
+                            </td>
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+        {% endif %}
+
+        <!-- BACK BUTTON -->
+
+        <div class="back-section">
+            <a href="{% url 'admin_page' %}" class="back-button">
+                ← Back to Home
+            </a>
+        </div>
+
+    </div>
+
+    <!-- FOOTER -->
+
+    <footer>
+
+        <div class="footer-security">
+            🔒 Please keep your banking details secure.
+        </div>
+
+        © 2026 ATM Banking System | Mini Statement
+
+    </footer>
+
+</body>
+
+</html>

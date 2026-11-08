@@ -1,68 +1,262 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect,get_object_or_404
+from django.db import transaction
+from decimal import Decimal, InvalidOperation
+from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import user_passes_test
 from .models import *
 from .forms import *
 
 
 def home(request):
-    
-    return render(request, 'home.html')
+    account = Account.objects.first()
+
+    return render(request, 'home.html', {
+        'account': account
+    })
 
 def Add_account(request):
 
-    if request.method=="POST":
+    if request.method == 'POST':
+        form = AccountForm(request.POST)
 
-        form=AccountForm(request.POST)
         if form.is_valid():
             form.save()
+            messages.success(request, "Account created successfully!")
+            return redirect('show_account')
 
-    return render(request,'acc_add.html')
+    else:
+        form = AccountForm()
 
-def deposit(request):
-    
+    return render(request, 'acc_add.html', {'form': form})
 
-    if request.method=="POST":
 
-        acc_no=request.POST['acc_no']
-        amount=int(request.POST['amount'])
-        account=Account.objects.get(acc_no=acc_no)
-        
-        account.balance+=amount
-        account.save()
-    return render(request,'deposit.html')
+def deposit(request, id):
 
-def withdraw(request):
+    # Get the initially selected account using database ID
+    account = get_object_or_404(Account, id=id)
 
-    if request.method=="POST":
-        acc_no=request.POST['acc_no']
-        amount=int(request.POST['amount'])
-        account=Account.objects.get(acc_no=acc_no)
-        if account.balance >= amount:
+    if request.method == "POST":
 
-            account.balance -= amount
+        acc_no = request.POST.get("acc_no", "").strip()
+        amount_input = request.POST.get("amount", "").strip()
 
-            account.save()
-            
+        # 1. Validate account number
+        if not acc_no:
+            return render(request, "deposit.html", {
+                "account": account,
+                "error": "Please enter your account number."
+            })
+
+        # 2. Find account using entered account number
+        try:
+            deposit_account = Account.objects.get(acc_no=acc_no)
+
+        except (Account.DoesNotExist, ValueError):
+            return render(request, "deposit.html", {
+                "account": account,
+                "error": "Account does not exist! Please check your account number."
+            })
+
+        # 3. Validate deposit amount
+        try:
+            amount = Decimal(amount_input)
+
+            if not amount.is_finite():
+                raise InvalidOperation
+
+        except (InvalidOperation, ValueError):
+            return render(request, "deposit.html", {
+                "account": deposit_account,
+                "error": "Please enter a valid deposit amount."
+            })
+
+        # 4. Check positive amount
+        if amount <= 0:
+            return render(request, "deposit.html", {
+                "account": deposit_account,
+                "error": "Deposit amount must be greater than ₹0."
+            })
+
+        # 5. Allow whole rupee amounts only
+        if amount != amount.to_integral_value():
+            return render(request, "deposit.html", {
+                "account": deposit_account,
+                "error": "Please enter a whole rupee amount."
+            })
+
+        # 6. Update balance and save transaction
+        amount = int(amount)
+
+        with transaction.atomic():
+
+            deposit_account = Account.objects.select_for_update().get(
+                id=deposit_account.id
+            )
+
+            deposit_account.balance += amount
+
+            deposit_account.save(update_fields=["balance"])
+
+            Transaction.objects.create(
+                account=deposit_account,
+                type="Deposit",
+                amount=amount
+            )
+
+        # 7. Display success message
+        return render(request, "deposit.html", {
+            "account": deposit_account,
+            "success": (
+                f"Deposit Successful! ₹{amount} has been deposited. "
+                f"Your current balance is ₹{deposit_account.balance}."
+            )
+        })
+
+    return render(request, "deposit.html", {
+        "account": account
+    })
+
+
+def withdraw(request, id):
+
+    # Get the account initially using URL ID
+    account = get_object_or_404(Account, id=id)
+
+    if request.method == "POST":
+
+        acc_no = request.POST.get("acc_no", "").strip()
+        amount_input = request.POST.get("amount", "").strip()
+
+        # Validate account number
+        if not acc_no:
+            return render(request, "withdraw.html", {
+                "account": account,
+                "error": "Please enter your account number."
+            })
+
+        # Account number must contain digits only
+        if not acc_no.isdigit():
+            return render(request, "withdraw.html", {
+                "account": account,
+                "error": "Please enter a valid account number."
+            })
+
+        # Find account using entered account number
+        try:
+            account = Account.objects.get(acc_no=int(acc_no))
+
+        except Account.DoesNotExist:
+            return render(request, "withdraw.html", {
+                "account": get_object_or_404(Account, id=id),
+                "error": "Account not found! Please check your account number."
+            })
+
+        # Validate withdrawal amount
+        try:
+            amount = Decimal(amount_input)
+
+            if not amount.is_finite():
+                raise InvalidOperation
+
+        except (InvalidOperation, ValueError):
+            return render(request, "withdraw.html", {
+                "account": account,
+                "error": "Please enter a valid withdrawal amount."
+            })
+
+        # Minimum withdrawal amount
+        if amount < Decimal("100"):
+            return render(request, "withdraw.html", {
+                "account": account,
+                "error": "Minimum withdrawal amount is ₹100."
+            })
+
+        # Whole rupees only
+        if amount != amount.to_integral_value():
+            return render(request, "withdraw.html", {
+                "account": account,
+                "error": "Please enter a whole rupee amount."
+            })
+
+        balance = Decimal(str(account.balance))
+
+        # Check available balance
+        if amount > balance:
+            return render(request, "withdraw.html", {
+                "account": account,
+                "error": f"Insufficient balance! Available balance is ₹{balance:.2f}."
+            })
+
+        remaining_balance = balance - amount
+
+        # Maintain minimum balance
+        if remaining_balance < Decimal("100"):
+            return render(request, "withdraw.html", {
+                "account": account,
+                "error": "You must maintain a minimum balance of ₹100."
+            })
+
+        # Update account balance
+        account.balance = int(remaining_balance)
+        account.save(update_fields=["balance"])
+
+        # Save transaction
+        Transaction.objects.create(
+            account=account,
+            type="Withdraw",
+            amount=int(amount)
+        )
+
+        # Success message
+        return render(request, "withdraw.html", {
+            "account": account,
+            "success": (
+                f"Withdrawal Successful! ₹{amount:.2f} withdrawn successfully. "
+            )
+        })
+
+    return render(request, "withdraw.html", {
+        "account": account
+    })
+
+def check_balance(request, id=None):
+
+    account = None
+    balance = None
+    error = None
+
+    # Get account using URL ID, if available
+    if id is not None:
+        account = get_object_or_404(Account, id=id)
+
+    if request.method == "POST":
+
+        acc_no = request.POST.get('acc_no', '').strip()
+
+        if not acc_no:
+            error = "Please enter your account number."
+
         else:
-            return render(request,'withdraw.html',{'error':'insufficient balance'})
+            try:
+                entered_account = Account.objects.get(acc_no=acc_no)
 
-    return render(request,'withdraw.html')
+                # Verify account number matches the URL account
+                if account and entered_account.id != account.id:
+                    error = "Account number does not match!"
 
-def check_balance(request):
-    if request.method=="POST":
-        acc_no=request.POST['acc_no']
-        account = Account.objects.get(acc_no=acc_no)
-        return render(request,'balance.html',{'balance':account.balance})
-    return render(request, 'balance.html')
+                else:
+                    account = entered_account
+                    balance = account.balance
 
-def statement(request, acc_no):
-    account = Account.objects.get(acc_no=acc_no)
-    transactions = Transaction.objects.filter(account=account)
+            except Account.DoesNotExist:
+                error = "Account not found! Please enter a valid account number."
 
-    return render(request, 'statement.html', {
+    return render(request, 'balance.html', {
         'account': account,
-        'transactions': transactions
+        'balance': balance,
+        'error': error
     })
 
 def admin_login(request):
@@ -104,55 +298,82 @@ def logout_view(request):
 
     return redirect('home')
 
+
+def admin_required(user):
+    return user.is_authenticated and user.is_staff
+
+
+@user_passes_test(admin_required, login_url='admin_login')
 def show_account(request):
+    accounts = Account.objects.all()
 
-    context={
-
-        'all_detail':Account.objects.all()
+    context = {
+        'accounts': accounts
     }
 
-    if request.method=='POST':
+    return render(request, 'show_account.html', context)
 
-        form=AccountForm(request.POST)
+
+def statement(request):
+    account = None
+    transactions = []
+    error = None
+    acc_no = ""
+
+    if request.method == "POST":
+        acc_no = request.POST.get("acc_no", "").strip()
+
+        try:
+            account = Account.objects.get(acc_no=acc_no)
+
+            transactions = Transaction.objects.filter(
+                account=account
+            ).order_by("-date")[:10]
+
+        except (Account.DoesNotExist, ValueError):
+            error = "Account does not exist. Please check your account number."
+
+    return render(request, "mini_statement.html", {
+        "account": account,
+        "transactions": transactions,
+        "error": error,
+        "acc_no": acc_no
+    })
+
+def updatepage(request, id):
+
+    account = Account.objects.get(id=id)
+
+    if request.method == 'POST':
+
+        form = AccountForm(request.POST, instance=account)
 
         if form.is_valid():
 
             form.save()
 
-    return render(request,'show_account.html',context)
+            messages.success(request, "Account updated successfully!")
 
-def updatepage(request,id):
+            return redirect('show_account')
 
-    selected_reg= Account.objects.get(id=id)
-
-    if request.method =='POST':
-
-        form=AccountForm(request.POST,instance=selected_reg)
-
-        if form.is_valid():
-
-            form.save()
-
-        return redirect('show_account')
     else:
-        form=AccountForm(instance=selected_reg)
 
-    context={
+        form = AccountForm(instance=account)
 
-        'register':form
-    }
+    return render(request, 'acc_add.html', {
+        'form': form,
+        'account': account
+    })
 
-    return render(request,'acc_add.html',{'form': form})
 
-def deletepage(request,id):
+def deletepage(request, id):
 
-    selected_reg=Account.objects.get(id=id)
+    account = Account.objects.get(id=id)
 
-    selected_reg.delete()
+    if request.method == 'POST':
+
+        account.delete()
+
+        messages.success(request, "Account deleted successfully!")
 
     return redirect('show_account')
-
-
-    
-
-

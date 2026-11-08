@@ -1,6 +1,486 @@
-<form method="POST" action="{% url 'withdraw' %}">
-    {% csrf_token %}
-    Account_number:<input type="number" name="acc_no">
-    Amount:<input type="number" name="amount">
-    <button type="submit" value="withdraw">Withdraw</button>
-</form>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ATM System | Withdraw</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: linear-gradient(135deg, #effaff, #fff0f6);
+            color: #173b55;
+            min-height: 100vh;
+        }
+
+        /* Navigation */
+        .navbar {
+            background: linear-gradient(110deg, #073b4c, #07566b);
+            color: white;
+            padding: 18px 6%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .brand {
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-size: 13px;
+            padding: 10px 12px;
+            border-radius: 7px;
+            transition: 0.2s;
+        }
+
+        .nav-links a:hover,
+        .nav-links .active {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Main Container */
+        .container {
+            width: 92%;
+            max-width: 560px;
+            margin: 45px auto;
+        }
+
+        /* Card */
+        .card {
+            background: white;
+            padding: 35px;
+            border-radius: 22px;
+            border: 1px solid #e3edf5;
+            box-shadow: 0 12px 35px rgba(7, 59, 76, 0.08);
+        }
+
+        /* Icon */
+        .icon {
+            width: 60px;
+            height: 60px;
+            display: grid;
+            place-items: center;
+            border-radius: 18px;
+            background: #ffe4ee;
+            color: #ff2e78;
+            font-size: 30px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #073b4c;
+            font-size: 28px;
+            margin: 0 0 10px;
+        }
+
+        .subtitle {
+            color: #71869b;
+            font-size: 14px;
+            line-height: 1.7;
+            margin-bottom: 25px;
+        }
+
+        /* Messages */
+        .messages-container {
+            margin-bottom: 22px;
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 13px;
+            line-height: 1.7;
+            font-weight: 600;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            overflow-wrap: anywhere;
+        }
+
+        .success-message {
+            background: #eafff2;
+            border: 1px solid #a8e9c1;
+            color: #167644;
+        }
+
+        .error-message {
+            background: #fff0f0;
+            border: 1px solid #ffcaca;
+            color: #c62828;
+        }
+
+        .message-icon {
+            font-size: 19px;
+            flex-shrink: 0;
+        }
+
+        /* Balance Information */
+        .balance-box {
+            background: #eef9ff;
+            border: 1px solid #dceefa;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 22px;
+        }
+
+        .balance-box p {
+            margin: 0 0 6px;
+            font-size: 13px;
+            color: #54718b;
+        }
+
+        .balance-box h2 {
+            margin: 0;
+            color: #07566b;
+            font-size: 25px;
+        }
+
+        /* Form */
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin: 20px 0 9px;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #d9e5ef;
+            border-radius: 10px;
+            outline: none;
+            background: #fbfdff;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+
+        input:focus {
+            border-color: #ff2e78;
+            box-shadow: 0 0 0 3px rgba(255, 46, 120, 0.1);
+        }
+
+        /* Quick Amount Buttons */
+        .amount-options {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-top: 14px;
+        }
+
+        .amount-options button {
+            padding: 11px 5px;
+            border: 1px solid #d9e5ef;
+            border-radius: 8px;
+            background: #f7fbff;
+            color: #173b55;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .amount-options button:hover {
+            background: #ffe4ee;
+            border-color: #ff2e78;
+            color: #e91e68;
+        }
+
+        /* Submit Button */
+        .submit-btn {
+            width: 100%;
+            border: none;
+            padding: 15px;
+            margin-top: 25px;
+            border-radius: 10px;
+            background: linear-gradient(110deg, #ff2e78, #ff5793);
+            color: white;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .submit-btn:hover {
+            filter: brightness(0.95);
+            transform: translateY(-1px);
+        }
+
+        /* Guidelines */
+        .notice {
+            background: #eef9ff;
+            border: 1px solid #dceefa;
+            border-radius: 10px;
+            padding: 13px;
+            margin-top: 20px;
+            color: #54718b;
+            font-size: 12px;
+            line-height: 1.8;
+        }
+
+        /* Back Link */
+        .back {
+            display: block;
+            text-align: center;
+            margin-top: 22px;
+            text-decoration: none;
+            color: #08758b;
+            font-size: 13px;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .back:hover {
+            color: #ff2e78;
+        }
+
+        /* Footer */
+        footer {
+            margin-top: 50px;
+            padding: 20px;
+            background: #073b4c;
+            color: #d9edf2;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        /* Responsive */
+        @media (max-width: 500px) {
+            .card {
+                padding: 25px 20px;
+            }
+
+            .navbar {
+                justify-content: center;
+            }
+
+            .amount-options {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .nav-links {
+                justify-content: center;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navigation Bar -->
+    <header class="navbar">
+
+        <div class="brand">▣ ATM System</div>
+
+        <nav class="nav-links">
+
+            <a href="{% url 'home' %}">Home</a>
+
+            <a href="{% url 'deposit' account.id %}">
+                Deposit
+            </a>
+
+            <a href="{% url 'withdraw' account.id %}" class="active">
+                Withdraw
+            </a>
+
+            <a href="{% url 'balance' account.id %}">
+                Balance
+            </a>
+
+        </nav>
+
+    </header>
+
+
+    <!-- Main Content -->
+    <main class="container">
+
+        <section class="card">
+
+            <div class="icon">↗</div>
+
+            <h1>Withdraw Cash</h1>
+
+            <p class="subtitle">
+                Make a secure withdrawal from your account.
+                Enter your account number and choose the amount you need.
+            </p>
+
+
+            <!-- Current Balance After Successful Withdrawal -->
+            <!--{% if success %}
+
+            <div class="balance-box">
+
+                <p>Updated Available Balance</p>
+
+                <h2>₹ {{ account.balance }}</h2>
+
+            </div>
+
+            {% endif %}-->
+
+
+            <!-- Success Message -->
+            {% if success %}
+
+            <div class="messages-container" role="status">
+
+                <div class="message success-message">
+
+                    <span class="message-icon">✓</span>
+
+                    <span>{{ success }}</span>
+
+                </div>
+
+            </div>
+
+            {% endif %}
+
+
+            <!-- Error Message -->
+            {% if error %}
+
+            <div class="messages-container" role="alert">
+
+                <div class="message error-message">
+
+                    <span class="message-icon">!</span>
+
+                    <span>{{ error }}</span>
+
+                </div>
+
+            </div>
+
+            {% endif %}
+
+
+            <!-- Withdrawal Form -->
+            <form method="POST" action="{% url 'withdraw' account.id %}">
+
+                {% csrf_token %}
+
+                <label for="acc_no">
+                    Account Number
+                </label>
+
+                <input type="text" id="acc_no" name="acc_no" placeholder="Enter your account number" inputmode="numeric"
+                    pattern="[0-9]+" required>
+
+                <label for="amount">
+                    Withdrawal Amount (₹)
+                </label>
+
+                <input type="number" id="amount" name="amount" placeholder="Enter withdrawal amount" min="100" step="1"
+                    required>
+
+
+                <!-- Quick Amount Selection -->
+                <div class="amount-options">
+
+                    <button type="button" onclick="setAmount(500)">
+                        ₹500
+                    </button>
+
+                    <button type="button" onclick="setAmount(1000)">
+                        ₹1,000
+                    </button>
+
+                    <button type="button" onclick="setAmount(2000)">
+                        ₹2,000
+                    </button>
+
+                    <button type="button" onclick="setAmount(4000)">
+                        ₹4,000
+                    </button>
+
+                </div>
+
+
+                <!-- Submit Button -->
+                <button type="submit" class="submit-btn">
+                    Withdraw Money →
+                </button>
+
+            </form>
+
+
+            <!-- Withdrawal Guidelines -->
+            <div class="notice">
+
+                <strong>Withdrawal Guidelines</strong><br>
+
+                • Minimum withdrawal amount: ₹100.<br>
+
+                • Minimum account balance after withdrawal: ₹100.<br>
+
+                • Withdrawals are subject to your available balance.
+
+            </div>
+
+
+            <!-- Back Link -->
+            <a href="{% url 'home' %}" class="back">
+                ← Back to Home
+            </a>
+
+        </section>
+
+    </main>
+
+
+    <!-- Footer -->
+    <footer>
+        © 2026 ATM System. All rights reserved.
+    </footer>
+
+
+    <!-- Quick Amount Script -->
+    <script>
+
+        function setAmount(amount) {
+
+            document.getElementById("amount").value = amount;
+
+        }
+
+    </script>
+
+</body>
+
+</html>

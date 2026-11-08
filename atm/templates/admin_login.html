@@ -1,28 +1,185 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-    <title>Admin Login</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATM System | Admin Login</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #eaf9ff, #fff0f6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #173b55;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 430px;
+            background: white;
+            padding: 38px;
+            border-radius: 22px;
+            box-shadow: 0 15px 45px rgba(7, 59, 76, 0.12);
+            border: 1px solid #e8edf5;
+        }
+
+        .logo {
+            width: 65px;
+            height: 65px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #073b4c, #08758b);
+            display: grid;
+            place-items: center;
+            font-size: 32px;
+            color: white;
+            margin: 0 auto 20px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 27px;
+            color: #073b4c;
+            margin-bottom: 9px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #71869b;
+            font-size: 14px;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin: 18px 0 8px;
+        }
+
+        input {
+            width: 100%;
+            padding: 13px 14px;
+            border: 1px solid #d9e5ef;
+            border-radius: 10px;
+            outline: none;
+            font-size: 14px;
+            background: #fbfdff;
+        }
+
+        input:focus {
+            border-color: #ff2e78;
+            box-shadow: 0 0 0 3px rgba(255, 46, 120, 0.1);
+        }
+
+        button {
+            width: 100%;
+            margin-top: 25px;
+            padding: 14px;
+            background: linear-gradient(110deg, #ff2e78, #ff5793);
+            border: none;
+            color: white;
+            font-weight: 700;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 15px;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 46, 120, 0.22);
+        }
+
+        .error {
+            background: #fff0f0;
+            color: #c62828;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 22px;
+            text-decoration: none;
+            color: #08758b;
+            font-size: 13px;
+        }
+
+        .back-link:hover {
+            color: #ff2e78;
+        }
+
+        .footer {
+            text-align: center;
+            color: #8b9aab;
+            font-size: 11px;
+            margin-top: 25px;
+        }
+
+        @media (max-width: 480px) {
+            .login-card {
+                padding: 27px 22px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
 </head>
+
 <body>
+    <main class="login-card">
 
-<h2>Admin Login</h2>
+        <div class="logo">▣</div>
 
-{% if error %}
-<p style="color:red">{{ error }}</p>
-{% endif %}
+        <h1>Admin Login</h1>
+        <p class="subtitle">
+            Sign in to manage ATM accounts and transactions.
+        </p>
 
-<form method="POST">
-    {% csrf_token %}
-    
-    <label>Username</label><br>
-    <input type="text" name="username" required><br><br>
+        {% if error %}
+        <div class="error">{{ error }}</div>
+        {% endif %}
 
-    <label>Password</label><br>
-    <input type="password" name="password" required><br><br>
+        <form method="POST" autocomplete="off">
+            {% csrf_token %}
 
-    <button type="submit">Login</button>
-</form>
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" placeholder="Enter your username" autocomplete="username"
+                required>
 
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" placeholder="Enter your password" autocomplete="off"
+                required>
+
+            <button type="submit">Sign In Securely →</button>
+        </form>
+
+        <a href="{% url 'home' %}" class="back-link">
+            ← Back to Home
+        </a>
+
+        <div class="footer">
+            © 2026 ATM System. All rights reserved.
+        </div>
+
+    </main>
 </body>
-</html>
 
+</html>

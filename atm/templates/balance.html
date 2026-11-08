@@ -1,11 +1,322 @@
-<form method="POST" action="{% url 'balance' %}">
-    {% csrf_token %}
-    account number:<input type="number" name="acc_no">
+<!DOCTYPE html>
+<html lang="en">
 
-    <button type="submit" value="acc_no">submit</button>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    {% if balance %}
-    <h3>balance:{{balance}}</h3>
-    {% endif %}
+    <title>ATM - Balance Enquiry</title>
 
-</form>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f3f6f7;
+            min-height: 100vh;
+            color: #1c2e33;
+        }
+
+        .navbar {
+            background: #1c2e33;
+            padding: 18px 7%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .brand {
+            color: white;
+            font-size: 23px;
+            font-weight: bold;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 25px;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-size: 15px;
+            transition: 0.3s;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: #ff2e63;
+        }
+
+        .container {
+            min-height: 80vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 35px 15px;
+        }
+
+        .card {
+            background: white;
+            width: 100%;
+            max-width: 480px;
+            padding: 40px;
+            border-radius: 18px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            text-align: center;
+        }
+
+        .icon {
+            width: 65px;
+            height: 65px;
+            background: #e8f3f4;
+            color: #1c2e33;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 32px;
+            margin: 0 auto 20px;
+        }
+
+        h2 {
+            font-size: 26px;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #777;
+            font-size: 14px;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .form-group {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 9px;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #d5dddd;
+            border-radius: 9px;
+            font-size: 15px;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #1c2e33;
+            box-shadow: 0 0 5px rgba(28, 46, 51, 0.15);
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #1c2e33;
+            color: white;
+            border: none;
+            border-radius: 9px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #ff2e63;
+        }
+
+        .error-message {
+            background: #ffe8e8;
+            color: #c62828;
+            padding: 13px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .balance-result {
+            background: #eaf6ef;
+            border: 1px solid #c6e8d2;
+            padding: 25px 15px;
+            border-radius: 12px;
+            margin-top: 25px;
+        }
+
+        .balance-result h3 {
+            color: #41634d;
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+
+        .balance-result h1 {
+            color: #168044;
+            font-size: 32px;
+        }
+
+        .account-info {
+            color: #666;
+            font-size: 13px;
+            margin-top: 12px;
+        }
+
+        /* Back to Home Link */
+        .back {
+            display: block;
+            margin-top: 22px;
+            text-align: center;
+            text-decoration: none;
+            color: #08758b;
+            font-size: 14px;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .back:hover {
+            color: #ff2e63;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #888;
+            font-size: 13px;
+        }
+
+        @media (max-width: 600px) {
+            .navbar {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .nav-links {
+                justify-content: center;
+                gap: 15px;
+            }
+
+            .card {
+                padding: 28px 20px;
+            }
+
+            h2 {
+                font-size: 23px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="navbar">
+
+        <div class="brand">▣ ATM System</div>
+
+        <nav class="nav-links">
+
+            <a href="{% url 'home' %}">Home</a>
+
+            {% if account %}
+            <a href="{% url 'deposit' account.id %}">Deposit</a>
+
+            <a href="{% url 'withdraw' account.id %}">Withdraw</a>
+
+            <a href="{% url 'balance' account.id %}" class="active">
+                Balance
+            </a>
+            {% else %}
+            <a href="{% url 'balance' %}" class="active">Balance</a>
+            {% endif %}
+
+        </nav>
+
+    </header>
+
+    <main class="container">
+
+        <section class="card">
+
+            <div class="icon">₹</div>
+
+            <h2>Balance Enquiry</h2>
+
+            <p class="subtitle">
+                Enter your account number to check your available account balance.
+            </p>
+
+            {% if error %}
+
+            <div class="error-message">
+                {{ error }}
+            </div>
+
+            {% endif %}
+
+            <form method="POST">
+
+                {% csrf_token %}
+
+                <div class="form-group">
+
+                    <label for="acc_no">Account Number</label>
+
+                    <input type="text" id="acc_no" name="acc_no" placeholder="Enter your account number" required>
+
+                </div>
+
+                <button type="submit">
+                    Check Balance
+                </button>
+
+            </form>
+
+            {% if balance != None %}
+
+            <div class="balance-result">
+
+                <h3>Available Account Balance</h3>
+
+                <h1>₹ {{ balance }}</h1>
+
+                <p class="account-info">
+                    Account Holder: {{ account.name }}
+                </p>
+
+                <p class="account-info">
+                    Account Number: {{ account.acc_no }}
+                </p>
+
+            </div>
+
+            {% endif %}
+
+            <!-- Back to Home Text Link -->
+            <a href="{% url 'home' %}" class="back">
+                ← Back to Home
+            </a>
+
+        </section>
+
+    </main>
+
+    <footer class="footer">
+        © 2026 ATM Management System. All Rights Reserved.
+    </footer>
+
+</body>
+
+</html>
